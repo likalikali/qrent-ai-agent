@@ -7,6 +7,7 @@ __pycache__/
 env/
 env2/
 venv/
+ui/extract_data.py
 
 # Environment variables
 .env
@@ -27,9 +28,11 @@ qrent_agent.db
 *.db-journal
 
 # Streamlit
-.streamlit/secrets.toml
+ui/.streamlit/secrets.toml
 
 # OS
 Thumbs.db
 .DS_Store
 DEPLOYMENT_GUIDE.md
+exported_invitations.json
+exported_reports.json

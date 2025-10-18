@@ -15,17 +15,44 @@ except ImportError:
     AVAILABLE_FUNCTIONS = {}
 
 # 导入Streamlit以使用secrets
-try:
-    import streamlit as st
-    # 从Streamlit Secrets获取API密钥
-    API_KEY = st.secrets.get("API_KEY_POINT")
-except ImportError:
-    # 如果在非Streamlit环境中运行，使用环境变量
-    from dotenv import load_dotenv, find_dotenv
-    dotenv_path = find_dotenv()
-    if dotenv_path:
-        load_dotenv(dotenv_path)
-    API_KEY = os.getenv("API_KEY_POINT")
+import warnings
+
+def load_api_key():
+    """加载API密钥，支持多种环境"""
+    api_key = None
+    
+    # 1. 尝试从Streamlit secrets加载
+    try:
+        import streamlit as st
+        api_key = st.secrets.get("API_KEY_POINT")
+        if api_key and api_key != "本地开发密钥":
+            return api_key
+    except Exception as e:
+        warnings.warn(f"无法从Streamlit secrets加载API密钥: {e}")
+    
+    # 2. 尝试从环境变量加载
+    try:
+        from dotenv import load_dotenv, find_dotenv
+        dotenv_path = find_dotenv()
+        if dotenv_path:
+            load_dotenv(dotenv_path)
+        api_key = os.getenv("API_KEY_POINT")
+        if api_key:
+            return api_key
+    except Exception as e:
+        warnings.warn(f"无法从环境变量加载API密钥: {e}")
+    
+    # 3. 如果是开发环境，返回一个占位符密钥
+    if os.environ.get("STREAMLIT_ENV") == "development" or "dev" in os.path.basename(os.getcwd()).lower():
+        warnings.warn("使用开发模式占位符密钥。在生产环境中请确保配置正确的API密钥。")
+        return "dev_placeholder_key"
+    
+    # 4. 返回None，但不会导致应用崩溃
+    warnings.warn("未找到API密钥。应用可能无法正常使用所有功能。")
+    return None
+
+# 加载API密钥
+API_KEY = load_api_key()
 
 # 配置常量
 INDEX_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "database", "faiss_index")
