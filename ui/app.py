@@ -84,7 +84,27 @@ class InvitationManager:
         return result
     
     def generate_invitation_code(self, max_uses=1, expires_days=30):
-        code = str(uuid.uuid4()).split('-')[0].upper()
+        # 生成更复杂的邀请码：前缀+随机字符串+校验位
+        import random
+        import string
+        
+        # 前缀部分：QR加上当前年月日的缩写
+        date_prefix = datetime.now().strftime("%Y%m%d")[:6]  # 取年月，如202305
+        
+        # 随机字符串部分：8位字母数字组合
+        chars = string.ascii_uppercase + string.digits
+        random_str = ''.join(random.choices(chars, k=8))
+        
+        # 校验位：基于前两部分的简单校验
+        check_str = date_prefix + random_str
+        check_sum = sum(ord(c) for c in check_str) % 36
+        check_char = string.ascii_uppercase + string.digits
+        check_digit = check_char[check_sum]
+        
+        # 组合成最终邀请码，格式化为分组合（XXXX-XXXX-XXXX）
+        code_parts = [date_prefix[:4], random_str[:4], random_str[4:] + check_digit]
+        code = '-'.join(code_parts)
+        
         created_at = datetime.now().isoformat()
         expires_at = (datetime.now() + timedelta(days=expires_days)).isoformat()
         
@@ -251,7 +271,29 @@ report_manager = ReportManager(db_path)
 
 # 生成测试邀请码（使用SQLite数据库）
 def generate_test_invitations():
-    test_codes = ['TEST01', 'TEST02', 'TEST03']
+    # 生成更复杂的测试邀请码
+    import random
+    import string
+    
+    # 为测试目的生成3个结构化的邀请码
+    test_codes = []
+    
+    for i in range(3):
+        # 固定前缀QR加上测试标记TEST
+        prefix = "QRTEST"
+        
+        # 随机字符串部分：4位字母数字组合
+        chars = string.ascii_uppercase + string.digits
+        random_str = ''.join(random.choices(chars, k=4))
+        
+        # 测试序号：01, 02, 03
+        test_num = f"{i+1:02d}"
+        
+        # 组合成测试邀请码
+        code = f"{prefix}-{random_str}-{test_num}"
+        test_codes.append(code)
+    
+    # 将测试邀请码添加到数据库
     for code in test_codes:
         invitation_manager.add_invitation(code, max_uses=5, expires_days=30)
 
@@ -280,7 +322,8 @@ def show_invitation_page():
         
         # 测试邀请码提示
         with st.expander("💡 测试邀请码"):
-            st.info("测试邀请码: TEST01, TEST02, TEST03")
+            st.info("系统将自动生成结构化的测试邀请码，格式为 QRTEST-XXXX-XX")
+            st.markdown("*注：每个测试邀请码可使用5次，有效期30天*")
     
     with col2:
         st.markdown("### 输入邀请码")
