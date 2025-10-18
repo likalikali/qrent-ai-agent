@@ -1,7 +1,35 @@
-.streamlit/secrets.toml
-data/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+env2/
+venv/
+
+# Environment variables
 .env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Database
+qrent_agent.db
+*.db-journal
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS
+Thumbs.db
 .DS_Store
 DEPLOYMENT_GUIDE.md
